@@ -10,3 +10,7 @@ npm-debug.log
 # Docker
 Dockerfile
 docker-compose.yml
+
+#Environment
+search_env.json
+firebase-admin-sdk.json
