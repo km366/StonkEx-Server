@@ -330,7 +330,7 @@ app.post('/sell', (req, res) => {
                     });
                     }
                     res.status(200);
-                    res.send("Success!");
+                    res.send("Successfully sold stocks!");
                 })
             }
         })
