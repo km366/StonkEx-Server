@@ -32,7 +32,7 @@ app
   .get('/', (req, res) => res.send('Welcome!'))
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
-app.get('/home', async(req, res) => {
+  app.get('/home', async(req, res) => {
     let idToken = req.query.token;
     await admin.auth().verifyIdToken(idToken)
     .then(function(decodedToken) {
@@ -49,27 +49,32 @@ app.get('/home', async(req, res) => {
                 jsonData.name = userFirstName;
                 db.collection("leaderboard").doc(email).get()
                 .then(async(doc) => {
-                let userMoney = doc.data().money;
-                jsonData.money = userMoney;
+                jsonData.money = doc.data().money;
+                jsonData.portfolio = doc.data().portfolio;
                 jsonData.invested = doc.data().invested;
                 let stonks = doc.data().stocks;
-                let portfolioVal = 0;
-                await axios.get(`${iexCaseUrl}stable/stock/market/batch?symbols=${Object.keys(stonks)}&types=quote&token=${iexApiKey}`)
-                .then((response) => {
-                    jsonData.stocks = response.data;
-                    for (let val in response.data){
-                        jsonData.stocks[val]['quantity'] = Number(stonks[val]);
-                        portfolioVal += parseInt(stonks[val]) * parseFloat(response.data[val].quote.latestPrice);
-                    }
-                })
-                .catch((err) => {
-                    res.status(400);
-                    res.send("Error!");
-                })
-                db.collection("leaderboard").doc(email).update({
-                    portfolio: Number((portfolioVal).toFixed(2))
-                });
-                jsonData.portfolio = Number((portfolioVal).toFixed(2));
+                if(stonks === undefined){
+                    jsonData.stocks = {};
+                }
+                else{
+                    let portfolioVal = 0;
+                    await axios.get(`${iexCaseUrl}stable/stock/market/batch?symbols=${Object.keys(stonks)}&types=quote&token=${iexApiKey}`)
+                    .then((response) => {
+                        jsonData.stocks = response.data;
+                        for (let val in response.data){
+                            jsonData.stocks[val]['quantity'] = Number(stonks[val]);
+                            portfolioVal += parseInt(stonks[val]) * parseFloat(response.data[val].quote.latestPrice);
+                        }
+                    })
+                    .catch((err) => {
+                        res.status(400);
+                        res.send("Error!");
+                    })
+                    db.collection("leaderboard").doc(email).update({
+                        portfolio: Number((portfolioVal).toFixed(2))
+                    });
+                    jsonData.portfolio = Number((portfolioVal).toFixed(2));
+                }
                 res.status(200);
                 res.json(jsonData);
                 });
