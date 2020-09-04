@@ -32,7 +32,7 @@ app
   .get('/', (req, res) => res.send('Welcome!'))
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
-  app.get('/home', async(req, res) => {
+app.get('/home', async(req, res) => {
     let idToken = req.query.token;
     await admin.auth().verifyIdToken(idToken)
     .then(function(decodedToken) {
@@ -53,7 +53,7 @@ app
                 jsonData.portfolio = doc.data().portfolio;
                 jsonData.invested = doc.data().invested;
                 let stonks = doc.data().stocks;
-                if(stonks === undefined){
+                if(stonks === undefined || Object.keys(stonks).length === 0){
                     jsonData.stocks = {};
                 }
                 else{
@@ -67,14 +67,16 @@ app
                         }
                     })
                     .catch((err) => {
+                        jsonData.message = "Error!";
                         res.status(400);
-                        res.send("Error!");
+                        res.json(jsonData);
                     })
                     db.collection("leaderboard").doc(email).update({
                         portfolio: Number((portfolioVal).toFixed(2))
                     });
                     jsonData.portfolio = Number((portfolioVal).toFixed(2));
                 }
+                jsonData.message = "Success";
                 res.status(200);
                 res.json(jsonData);
                 });
