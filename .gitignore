@@ -11,3 +11,6 @@ npm-debug.log
 Dockerfile
 docker-compose.yml
 
+#Firebase admin
+firebase-admin-sdk.json
+
